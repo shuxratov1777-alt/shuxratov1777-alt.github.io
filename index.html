@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IT Park • University Partner Hub</title>
+
+  <!-- Bootstrap & jQuery (CDN) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Cold theme colors -->
+  <style>
+    :root{
+      --primary-color: #1E3A8A; /* глубокий синий */
+      --primary-color-hover:#1e40af; /* blue-800 */
+      --accent-color: #312E81; /* индиго */
+      --dark-color: #0f172a;    /* slate-900 */
+      --muted-color: #64748b;   /* slate-500 */
+      --light-bg: #f5f8ff;
+      --kanban-incoming:#e7f0ff; /* голубой пастель */
+      --kanban-progress:#ecebff; /* индиго пастель */
+      --kanban-hold:#eef2f7;     /* холодный серо-голубой */
+      --kanban-done:#e6f6ff;     /* небесный пастель */
+      --card-shadow: 0 10px 25px rgba(0,0,0,.06);
+      --radius: 18px;
+      --border-cold:#e0e7ff;
+    }
+    body{ background:linear-gradient(180deg,#ffffff 0%, var(--light-bg) 100%); color:var(--dark-color); }
+    .navbar{ background:#fff; border-bottom:1px solid var(--border-cold); }
+    .brand-badge{ font-weight:700; letter-spacing:.5px; color:var(--dark-color); }
+    .btn-it{
+      --bs-btn-color:#fff; --bs-btn-bg:var(--primary-color); --bs-btn-border-color:var(--primary-color);
+      --bs-btn-hover-bg:var(--primary-color-hover); --bs-btn-hover-border-color:var(--primary-color-hover);
+      --bs-btn-focus-shadow-rgb:30,58,138;
+    }
+    .nav-pills .nav-link{ border-radius: 999px; padding:.6rem 1rem; }
+    .nav-pills .nav-link.active{ background:var(--primary-color); }
+    .section{ padding: 18px; }
+    .card{ border: 1px solid var(--border-cold); border-radius: var(--radius); box-shadow: var(--card-shadow); }
+
+    /* === ЕДИНЫЕ РАЗМЕРЫ ЛОГО === */
+    .logo{ width:48px; height:48px; object-fit:contain; }
+    .logo-sm{ width:32px; height:32px; object-fit:contain; }
+
+    .list-group-item-action.active{ background:var(--primary-color); border-color:var(--primary-color); color:#fff; }
+    .muted{ color:var(--muted-color); }
+
+    /* Evaluation watermark (IT Park logo) */
+    .eval-watermark{ position:relative; }
+    .eval-watermark::after{
+      content:""; position:absolute; inset:0;
+      background:url('https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/IT_PARK_UZBEKISTAN_logo.png/960px-IT_PARK_UZBEKISTAN_logo.png') center/40% no-repeat;
+      opacity:.05; pointer-events:none;
+    }
+
+    /* TRACKING (Kanban) */
+    .board{ display:grid; gap:16px; grid-template-columns: repeat(4, minmax(240px,1fr)); }
+    .column{ border-radius: var(--radius); padding:12px; min-height: 360px; border:1px dashed #c7d2fe; background:#fff; position:relative; overflow: hidden; }
+    .column.incoming{ background: var(--kanban-incoming); }
+    .column.progress{ background: var(--kanban-progress); }
+    .column.hold{ background: var(--kanban-hold); }
+    .column.done{ background: var(--kanban-done); }
+    .column h6{ margin: 6px 6px 10px; font-weight:700; text-transform: uppercase; letter-spacing:.5px; color:var(--accent-color); }
+    .kcard{ border-radius: 14px; background:#fff; border:1px solid var(--border-cold); padding:10px 12px; margin-bottom:10px; box-shadow: 0 6px 16px rgba(0,0,0,.05); cursor:grab; }
+    .kcard:active{ cursor:grabbing; }
+    .drop-hint{ position:absolute; inset:0; border:2px dashed rgba(37,99,235,.25); border-radius: var(--radius); display:none; }
+    .column.drag-over .drop-hint{ display:block; }
+
+    /* subtle hover/transition */
+    .card, .kcard, .list-group-item{ transition: transform .12s ease, box-shadow .2s ease, background .2s ease; }
+    .card:hover{ transform: translateY(-2px); box-shadow: 0 14px 30px rgba(0,0,0,.08); }
+
+    /* tiny badge pills */
+    .pill{ display:inline-block; padding:.25rem .55rem; border-radius:999px; font-size:.75rem; background:#eef2ff; color:var(--accent-color); border:1px solid #dde3ff; }
+
+    @media (max-width: 992px){ .projects-grid{ display:block; } }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="navbar sticky-top">
+    <div class="container-fluid">
+      <div class="d-flex align-items-center gap-2">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/IT_PARK_UZBEKISTAN_logo.png/320px-IT_PARK_UZBEKISTAN_logo.png" alt="IT Park" height="34" />
+        <span class="brand-badge">IT Park • University Partner Hub</span>
+      </div>
+
+      <ul class="nav nav-pills">
+        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#projects">Projects</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#evaluation">Evaluation</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tracking">Трекинг</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container-xl my-3">
+    <div class="tab-content">
+
+      <!-- PROJECTS -->
+      <div class="tab-pane fade show active section" id="projects">
+        <div class="row g-3 projects-grid">
+          <!-- Sidebar -->
+          <div class="col-lg-3">
+            <div class="card">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <h5 class="mb-0">Университеты</h5>
+                  <span class="pill" id="uniCount">0</span>
+                </div>
+                <div class="input-group mb-2">
+                  <span class="input-group-text">🔎</span>
+                  <input id="uniSearch" class="form-control" placeholder="Поиск по названию">
+                </div>
+                <div class="list-group" id="uniList" role="tablist" style="max-height:65vh;overflow:auto;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Details -->
+          <div class="col-lg-9">
+            <div class="card">
+              <div class="card-body">
+                <div id="uniDetails" class="muted">Выберите университет слева, чтобы увидеть подробности.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EVALUATION -->
+      <div class="tab-pane fade section eval-watermark" id="evaluation">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+          <h5 class="mb-0">Оценка партнёров</h5>
+          <div class="d-flex align-items-center gap-2">
+            <label class="form-check-label muted me-2">Show details</label>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="toggleDetails">
+            </div>
+            <select id="sortBy" class="form-select form-select-sm" style="width:220px">
+              <option value="name">Sort: University name</option>
+              <option value="cashflow">Sort: Cash flow</option>
+              <option value="rank_country">Sort: Ranking (country)</option>
+              <option value="employment_rate">Sort: Employment rate</option>
+            </select>
+          </div>
+        </div>
+        <div class="row g-3" id="cardsWrap"></div>
+        <div class="small muted mt-2">* Нажмите «Добавить в трекинг», чтобы поместить университет в колонку Incoming.</div>
+      </div>
+
+      <!-- TRACKING -->
+      <div class="tab-pane fade section" id="tracking">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <h5 class="mb-0">Трекинг (Kanban)</h5>
+          <div class="small muted">Перетаскивайте карточки между колонками. Клик по карточке — комментарии.</div>
+        </div>
+
+        <div class="board">
+          <div class="column incoming" data-stage="incoming">
+            <h6>Incoming</h6>
+            <div class="drop-hint"></div>
+            <div class="stack" id="col-incoming"></div>
+          </div>
+          <div class="column progress" data-stage="in_progress">
+            <h6>In progress</h6>
+            <div class="drop-hint"></div>
+            <div class="stack" id="col-progress"></div>
+          </div>
+          <div class="column hold" data-stage="on_hold">
+            <h6>On hold</h6>
+            <div class="drop-hint"></div>
+            <div class="stack" id="col-hold"></div>
+          </div>
+          <div class="column done" data-stage="done">
+            <h6>Done</h6>
+            <div class="drop-hint"></div>
+            <div class="stack" id="col-done"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comment Modal -->
+  <div class="modal fade" id="commentModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title" id="commentTitle">Комментарии</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+        </div>
+        <div class="modal-body">
+          <textarea id="commentText" class="form-control" rows="6" placeholder="Добавьте заметки по этому университету..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Закрыть</button>
+          <button class="btn btn-it" id="saveComment">Сохранить</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // -------- Demo dataset (реальные лого + демо-показатели) --------
+    const UNIVERSITIES = [
+      {
+        id: 'iut',
+        name: 'Inha University in Tashkent (IUT)',
+        logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Emblem-IUT.jpg/663px-Emblem-IUT.jpg',
+        website: 'https://inha.uz/',
+        linkedin: 'https://www.linkedin.com/school/inha-university-in-tashkent/',
+        description: 'Филиал корейского INHA University в Ташкенте, ориентирован на ИТ и логистику.',
+        businessPlan: 'Фокус на совместных программам, развитие SOCIE, расширение индустриальных партнёрств.',
+        terms: 'Партнёрские соглашения подлежат локальной аккредитации. Условия стажировок согласуются отдельно.',
+        programs: ['Joint Ventures', 'Zero Risk'],
+        rank_country: 8,
+        rank_world: 4200,
+        cashflow: 3.2, // условный денежный поток (млн $/год)
+        outsourcing: 'Available',
+        tuition: { master: 4800, bachelor: 3800, courses: 900 },
+        branches: 1,
+        employment_rate: 82,
+        bpo_partners: 18
+      },
+      {
+        id: 'wiut',
+        name: 'Westminster International University in Tashkent (WIUT)',
+        logo: 'https://upload.wikimedia.org/wikipedia/commons/1/1e/Westminster-logo.png',
+        website: 'https://www.wiut.uz/',
+        linkedin: 'https://www.linkedin.com/school/westminster-international-university-in-tashkent/',
+        description: 'Первый международный университет Узбекистана с британской аккредитацией (University of Westminster).',
+        businessPlan: 'Широкий пул программ (UG/PG), корпоративные тренинги, международные обмены.',
+        terms: 'Британские стандарты качества. Совместный брендинг по гайдлайнам Westminster.',
+        programs: ['Joint Ventures', 'Zero Risk'],
+        rank_country: 5,
+        rank_world: 3800,
+        cashflow: 4.1,
+        outsourcing: 'Available',
+        tuition: { master: 6200, bachelor: 5200, courses: 1100 },
+        branches: 1,
+        employment_rate: 86,
+        bpo_partners: 22
+      },
+      {
+        id: 'webster',
+        name: 'Webster University in Tashkent',
+        logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Webster_University_Tashkent.png/960px-Webster_University_Tashkent.png',
+        website: 'https://www.webster.uz/',
+        linkedin: 'https://www.linkedin.com/school/webster-university-tashkent/',
+        description: 'Американский частный некоммерческий университет. Кампус в Ташкенте с 2019 года.',
+        businessPlan: 'Рост программ бизнеса/менеджмента, развитие сети практик и карьеры.',
+        terms: 'Американская модель. Возможны ускоренные треки и совместные степени.',
+        programs: ['Joint Ventures', 'Zero Risk'],
+        rank_country: 6,
+        rank_world: 3900,
+        cashflow: 3.7,
+        outsourcing: 'Available',
+        tuition: { master: 6500, bachelor: 5400, courses: 1200 },
+        branches: 1,
+        employment_rate: 84,
+        bpo_partners: 16
+      },
+      {
+        id: 'amity',
+        name: 'Amity University Tashkent',
+        logo: 'https://images.seeklogo.com/logo-png/39/1/amity-university-logo-png_seeklogo-396047.png',
+        website: 'https://amity.uz/en',
+        linkedin: 'https://www.linkedin.com/school/amity-university-tashkent/',
+        description: 'Международный университет Amity. Бизнес, ИТ, менеджмент.',
+        businessPlan: 'Корпоративные программы и отраслевые партнёрства с BPO/outsourcing.',
+        terms: 'Бренд-гайд Amity обязателен. Возможны грантовые места для JV.',
+        programs: ['Joint Ventures', 'Zero Risk'],
+        rank_country: 10,
+        rank_world: 5200,
+        cashflow: 2.4,
+        outsourcing: 'Available',
+        tuition: { master: 5000, bachelor: 4200, courses: 1000 },
+        branches: 1,
+        employment_rate: 79,
+        bpo_partners: 11
+      },
+
+      /* Зарубежные */
+      {
+        id: 'harvard',
+        name: 'Harvard University',
+        logo: 'https://upload.wikimedia.org/wikipedia/en/2/29/Harvard_shield_wreath.svg',
+        website: 'https://www.harvard.edu/',
+        linkedin: 'https://www.linkedin.com/school/harvard-university/',
+        description: 'Частный исследовательский университет в Кембридже (США).',
+        businessPlan: 'Глобальные исследовательские коллаборации и программы обмена.',
+        terms: 'Строгие академические стандарты и комплаенс.',
+        programs: ['Joint Ventures', 'Zero Risk'],
+        rank_country: 1,
+        rank_world: 1,
+        cashflow: 50,
+        outsourcing: 'Available',
+        tuition: { master: 52000, bachelor: 50000, courses: 15000 },
+        branches: 1,
+        employment_rate: 95,
+        bpo_partners: 100
+      },
+      {
+        id: 'oxford',
+        name: 'University of Oxford',
+        logo: 'https://upload.wikimedia.org/wikipedia/en/d/d7/Oxford_University_Circlet.svg',
+        website: 'https://www.ox.ac.uk/',
+        linkedin: 'https://www.linkedin.com/school/university-of-oxford/',
+        description: 'Старейший университет англоязычного мира, Оксфорд (Великобритания).',
+        businessPlan: 'Междисциплинарные инициативы и индустриальные партнёрства.',
+        terms: 'Британские регуляции и этические стандарты.',
+        programs: ['Joint Ventures', 'Zero Risk'],
+        rank_country: 1,
+        rank_world: 2,
+        cashflow: 48,
+        outsourcing: 'Available',
+        tuition: { master: 45000, bachelor: 43000, courses: 14000 },
+        branches: 1,
+        employment_rate: 94,
+        bpo_partners: 90
+      },
+      {
+        id: 'mit',
+        name: 'Massachusetts Institute of Technology (MIT)',
+        logo: 'https://upload.wikimedia.org/wikipedia/commons/0/0c/MIT_logo.svg',
+        website: 'https://www.mit.edu/',
+        linkedin: 'https://www.linkedin.com/school/mit/',
+        description: 'Ведущий мировой техуниверситет, Кембридж (США).',
+        businessPlan: 'Трансфер технологий, стартап-акселерация, корпоративные JV.',
+        terms: 'Интеллектуальная собственность — по лицензиям MIT.',
+        programs: ['Joint Ventures', 'Zero Risk'],
+        rank_country: 1,
+        rank_world: 3,
+        cashflow: 45,
+        outsourcing: 'Available',
+        tuition: { master: 53000, bachelor: 51000, courses: 16000 },
+        branches: 1,
+        employment_rate: 96,
+        bpo_partners: 85
+      },
+      {
+        id: 'stanford',
+        name: 'Stanford University',
+        logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4b/Stanford_Cardinal_logo.svg',
+        website: 'https://www.stanford.edu/',
+        linkedin: 'https://www.linkedin.com/school/stanford-university/',
+        description: 'Частный исследовательский университет рядом с Кремниевой долиной.',
+        businessPlan: 'Стартап-партнёрства, практико-ориентированные R&D, индустриальные лаборатории.',
+        terms: 'Стандарты безопасности исследований и IP-политика Stanford.',
+        programs: ['Joint Ventures', 'Zero Risk'],
+        rank_country: 2,
+        rank_world: 4,
+        cashflow: 44,
+        outsourcing: 'Available',
+        tuition: { master: 52000, bachelor: 50000, courses: 15000 },
+        branches: 1,
+        employment_rate: 95,
+        bpo_partners: 88
+      }
+    ];
+
+    // ---------- Projects (sidebar + detail) ----------
+    function renderSidebar(filter=''){
+      const list = $('#uniList').empty();
+      const items = UNIVERSITIES.filter(u => u.name.toLowerCase().includes(filter.toLowerCase()));
+      $('#uniCount').text(items.length);
+      items.forEach((u, idx)=>{
+        const a = $(`
+          <a href="#" class="list-group-item list-group-item-action d-flex align-items-center gap-2" data-id="${u.id}">
+            <img class="logo" src="${u.logo}" alt="${u.name}">
+            <div class="small">
+              <div class="fw-semibold">${u.name}</div>
+              <div class="text-muted">Programs: ${u.programs.join(', ')}</div>
+            </div>
+          </a>
+        `);
+        if(idx===0) a.addClass('active');
+        list.append(a);
+      });
+      if(items.length){ showDetails(items[0].id); }
+      else $('#uniDetails').html('<span class="muted">Ничего не найдено.</span>');
+    }
+
+    function showDetails(id){
+      const u = UNIVERSITIES.find(x => x.id===id);
+      if(!u) return;
+      $('#uniList .list-group-item').removeClass('active');
+      $(`#uniList .list-group-item[data-id="${id}"]`).addClass('active');
+
+      const html = `
+        <div class="d-flex align-items-center gap-3 mb-2">
+          <img class="logo" src="${u.logo}" alt="${u.name}">
+          <div>
+            <h4 class="mb-0">${u.name}</h4>
+            <div class="muted">Programs: ${u.programs.map(p=>`<span class=\"pill me-1\">${p}</span>`).join(' ')}</div>
+          </div>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-7">
+            <h6>Описание университета</h6>
+            <p>${u.description}</p>
+            <h6>Бизнес-план</h6>
+            <p>${u.businessPlan}</p>
+            <h6>Terms & Conditions</h6>
+            <div class="border rounded p-2 bg-light">${u.terms}</div>
+          </div>
+          <div class="col-md-5">
+            <div class="card">
+              <div class="card-body">
+                <div class="d-grid gap-2">
+                  <a target="_blank" href="${u.website}" class="btn btn-it">🌐 Веб-сайт</a>
+                  <a target="_blank" href="${u.linkedin}" class="btn btn-outline-primary">in LinkedIn</a>
+                </div>
+                <hr>
+                <div class="small">
+                  <div><b>Ranking (country):</b> ${u.rank_country}</div>
+                  <div><b>Ranking (world):</b> ${u.rank_world}</div>
+                  <div><b>Outsourcing:</b> ${u.outsourcing}</div>
+                  <div><b>Branches:</b> ${u.branches}</div>
+                  <div><b>Employment rate:</b> ${u.employment_rate}%</div>
+                  <div class="mt-2"><b>Average tuition:</b>
+                    <ul class="mb-0">
+                      <li>Master: $${u.tuition.master}</li>
+                      <li>Bachelor: $${u.tuition.bachelor}</li>
+                      <li>Courses: $${u.tuition.courses}</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-it w-100 mt-2" onclick="addToTracking('${u.id}')">Добавить в трекинг</button>
+          </div>
+        </div>
+      `;
+      $('#uniDetails').html(html);
+    }
+
+    // ---------- Evaluation (cards + sorting + details toggle) ----------
+    function renderCards(){
+      const wrap = $('#cardsWrap').empty();
+      UNIVERSITIES.forEach(u=>{
+        const card = $(`
+          <div class="col-12 col-md-6 col-xl-4">
+            <div class="card h-100">
+              <div class="card-body d-flex flex-column">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <img class="logo" src="${u.logo}" alt="${u.name}">
+                  <div>
+                    <div class="fw-semibold">${u.name}</div>
+                    <div class="muted small">Cash flow ~$${u.cashflow}M • Rank (UZ) #${u.rank_country}</div>
+                  </div>
+                </div>
+
+                <div class="small mb-2">
+                  <a class="me-2" target="_blank" href="${u.website}">🌐 Website</a>
+                  <a target="_blank" href="${u.linkedin}">in LinkedIn</a>
+                </div>
+
+                <div class="form-check form-switch mb-2">
+                  <input class="form-check-input details-switch" type="checkbox">
+                  <label class="form-check-label">Details</label>
+                </div>
+
+                <div class="details-zone" style="display:none">
+                  <ul class="small list-unstyled mb-2">
+                    <li>Turnover (cash flow): <b>$${u.cashflow}M</b></li>
+                    <li>Ranking in country: <b>#${u.rank_country}</b></li>
+                    <li>Ranking in the world: <b>#${u.rank_world}</b></li>
+                    <li>Outsourcing availability: <b>${u.outsourcing}</b></li>
+                    <li>Average tuition — Master: <b>$${u.tuition.master}</b>, Bachelor: <b>$${u.tuition.bachelor}</b>, Courses: <b>$${u.tuition.courses}</b></li>
+                    <li>Number of branches: <b>${u.branches}</b></li>
+                    <li>Employment rate: <b>${u.employment_rate}%</b></li>
+                    <li>BPO partner companies: <b>${u.bpo_partners}</b></li>
+                  </ul>
+                  <div class="small">Programs: ${u.programs.map(p=>`<span class=\"pill me-1\">${p}</span>`).join(' ')}</div>
+                </div>
+
+                <div class="mt-auto pt-2">
+                  <button class="btn btn-it w-100" onclick="addToTracking('${u.id}')">Добавить в трекинг</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `);
+        wrap.append(card);
+      });
+
+      // Master toggle
+      $('#toggleDetails').off('change').on('change', function(){
+        const on = $(this).is(':checked');
+        $('.details-zone').toggle(on);
+        $('.details-switch').prop('checked', on);
+      });
+
+      // Per-card switch
+      $('.details-switch').on('change', function(){
+        $(this).closest('.card').find('.details-zone').toggle(this.checked);
+      });
+
+      // Sorting
+      $('#sortBy').off('change').on('change', function(){
+        const key = $(this).val();
+        const sorted = [...UNIVERSITIES].sort((a,b)=>{
+          if(key==='name') return a.name.localeCompare(b.name);
+          if(key==='cashflow') return b.cashflow - a.cashflow;
+          if(key==='rank_country') return a.rank_country - b.rank_country; // ниже — лучше
+          if(key==='employment_rate') return b.employment_rate - a.employment_rate;
+          return 0;
+        });
+        const saveToggle = $('#toggleDetails').is(':checked');
+        $('#cardsWrap').empty();
+        sorted.forEach(u=>{
+          const cardHTML = `
+          <div class="col-12 col-md-6 col-xl-4">
+            <div class="card h-100">
+              <div class="card-body d-flex flex-column">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <img class="logo" src="${u.logo}" alt="${u.name}">
+                  <div>
+                    <div class="fw-semibold">${u.name}</div>
+                    <div class="muted small">Cash flow ~$${u.cashflow}M • Rank (UZ) #${u.rank_country}</div>
+                  </div>
+                </div>
+                <div class="small mb-2">
+                  <a class="me-2" target="_blank" href="${u.website}">🌐 Website</a>
+                  <a target="_blank" href="${u.linkedin}">in LinkedIn</a>
+                </div>
+                <div class="form-check form-switch mb-2">
+                  <input class="form-check-input details-switch" type="checkbox" ${saveToggle?'checked':''}>
+                  <label class="form-check-label">Details</label>
+                </div>
+                <div class="details-zone" style="display:${saveToggle?'block':'none'}">
+                  <ul class="small list-unstyled mb-2">
+                    <li>Turnover (cash flow): <b>$${u.cashflow}M</b></li>
+                    <li>Ranking in country: <b>#${u.rank_country}</b></li>
+                    <li>Ranking in the world: <b>#${u.rank_world}</b></li>
+                    <li>Outsourcing availability: <b>${u.outsourcing}</b></li>
+                    <li>Average tuition — Master: <b>$${u.tuition.master}</b>, Bachelor: <b>$${u.tuition.bachelor}</b>, Courses: <b>$${u.tuition.courses}</b></li>
+                    <li>Number of branches: <b>${u.branches}</b></li>
+                    <li>Employment rate: <b>${u.employment_rate}%</b></li>
+                    <li>BPO partner companies: <b>${u.bpo_partners}</b></li>
+                  </ul>
+                  <div class="small">Programs: ${u.programs.map(p=>`<span class=\"pill me-1\">${p}</span>`).join(' ')}</div>
+                </div>
+                <div class="mt-auto pt-2">
+                  <button class="btn btn-it w-100" onclick="addToTracking('${u.id}')">Добавить в трекинг</button>
+                </div>
+              </div>
+            </div>
+          </div>`;
+          $('#cardsWrap').append(cardHTML);
+        });
+        $('.details-switch').on('change', function(){
+          $(this).closest('.card').find('.details-zone').toggle(this.checked);
+        });
+      });
+    }
+
+    // ---------- Tracking (drag & drop + comments) ----------
+    const TRACK = {
+      incoming: [],
+      in_progress: [],
+      on_hold: [],
+      done: []
+    };
+    const COMMENTS = {}; // {id: 'text'}
+
+    function miniCard(u){
+      return $(`
+        <div class="kcard" draggable="true" data-id="${u.id}">
+          <div class="d-flex align-items-center gap-2">
+            <img class="logo-sm" src="${u.logo}" alt="${u.name}">
+            <div class="small">
+              <div class="fw-semibold">${u.name}</div>
+              <div class="muted">Rank UZ #${u.rank_country} • ${u.outsourcing}</div>
+            </div>
+          </div>
+        </div>
+      `);
+    }
+
+    function addToTracking(id){
+      const u = UNIVERSITIES.find(x=>x.id===id);
+      if(!u) return;
+      if(TRACK.incoming.includes(id) || TRACK.in_progress.includes(id) || TRACK.on_hold.includes(id) || TRACK.done.includes(id)){
+        // already on board — focus tracking tab
+        $('.nav-link[href="#tracking"]').tab('show');
+        return;
+      }
+      TRACK.incoming.push(id);
+      $('#col-incoming').append(miniCard(u));
+      bindDnD();
+      bindCardClick();
+      // jump to tracking
+      $('.nav-link[href="#tracking"]').tab('show');
+    }
+
+    function renderBoard(){
+      ['incoming','in_progress','on_hold','done'].forEach(stage=>{
+        const col = $(`#col-${stage.replace('_','-')}`).empty();
+        TRACK[stage].forEach(id=>{
+          const u = UNIVERSITIES.find(x=>x.id===id);
+          if(u) col.append(miniCard(u));
+        });
+      });
+      bindDnD();
+      bindCardClick();
+    }
+
+    function bindDnD(){
+      // draggable cards
+      $('.kcard').off('dragstart').on('dragstart', function(e){
+        e.originalEvent.dataTransfer.setData('text/plain', $(this).data('id'));
+        setTimeout(()=>$(this).css('opacity','.6'),0);
+      }).off('dragend').on('dragend', function(){ $(this).css('opacity','1'); });
+
+      // columns
+      $('.column').off('dragover dragenter drop dragleave')
+        .on('dragover', function(e){ e.preventDefault(); })
+        .on('dragenter', function(){ $(this).addClass('drag-over'); })
+        .on('dragleave', function(){ $(this).removeClass('drag-over'); })
+        .on('drop', function(e){
+          e.preventDefault();
+          $(this).removeClass('drag-over');
+          const id = e.originalEvent.dataTransfer.getData('text/plain');
+          const targetStage = $(this).data('stage');
+          moveCardTo(id, targetStage);
+        });
+    }
+
+    function moveCardTo(id, stage){
+      // remove from all
+      Object.keys(TRACK).forEach(k=>{
+        TRACK[k] = TRACK[k].filter(x=>x!==id);
+      });
+      // add to target
+      TRACK[stage].push(id);
+      renderBoard();
+    }
+
+    function bindCardClick(){
+      $('.kcard').off('click').on('click', function(){
+        const id = $(this).data('id');
+        const u = UNIVERSITIES.find(x=>x.id===id);
+        $('#commentTitle').text(`Комментарии — ${u?.name ?? id}`);
+        $('#commentText').val(COMMENTS[id] || '');
+        $('#saveComment').data('id', id);
+        const modal = new bootstrap.Modal('#commentModal'); modal.show();
+      });
+    }
+
+    $('#saveComment').on('click', function(){
+      const id = $(this).data('id');
+      COMMENTS[id] = $('#commentText').val();
+      bootstrap.Modal.getInstance(document.getElementById('commentModal')).hide();
+    });
+
+    // ---------- events ----------
+    $(document).on('click', '#uniList .list-group-item', function(e){
+      e.preventDefault();
+      showDetails($(this).data('id'));
+    });
+
+    $('#uniSearch').on('input', function(){
+      renderSidebar($(this).val());
+    });
+
+    // ---------- init ----------
+    $(function(){
+      renderSidebar();
+      renderCards();
+      renderBoard();
+    });
+  </script>
+</body>
+</html>
